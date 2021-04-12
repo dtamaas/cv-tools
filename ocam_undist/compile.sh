@@ -1,0 +1,1 @@
+g++ src/main.cpp src/ocam_functions.cpp -o ocam_undist.out `pkg-config --cflags --libs opencv4`

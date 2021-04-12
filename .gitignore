@@ -30,3 +30,18 @@
 *.exe
 *.out
 *.app
+
+# Vscode settings
+*/.vscode
+
+# Text files
+*/*.txt
+
+# Images
+*/images/*.jpg
+*/images/*.png
+*/images/*.bmp
+
+*/results/*.jpg
+*/results/*.png
+*/results/*.bmp
