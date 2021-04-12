@@ -33,6 +33,7 @@
 
 # Vscode settings
 */.vscode
+/.vscode
 
 # Text files
 */*.txt
