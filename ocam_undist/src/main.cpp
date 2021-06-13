@@ -10,9 +10,9 @@ void read(T &data, const std::string& instruction) {
 
 void undistort_images() {
     std::string base_file_name;
-    std::string extension = "txt";
+    std::string extension = "jpg";
     std::string calib_file_name = "calib_results.txt";
-    float scale_factor = 4;
+    float scale_factor;
     int first_image_index;
     int last_image_index;
 

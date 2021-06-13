@@ -46,3 +46,17 @@
 */results/*.jpg
 */results/*.png
 */results/*.bmp
+
+# Videos
+*/videos/*.mkv
+*/videos/*.mp4
+*/videos/*.avi
+*/videos/*.mov
+
+*/results/*.mkv
+*/results/*.mp4
+*/results/*.avi
+*/results/*.mov
+
+# Camera parameters
+*/camera_parameters/*.txt

@@ -71,7 +71,7 @@ void get_chessboard_corners(const std::vector<std::string>& paths) {
 	std::vector<cv::Point2f> image_corners;
 
 	std::cout << "Finding and drawing chessboard corners..." << std::endl;
-
+    int count = 0;
 	for (int i = 0; i < paths.size(); i++) {
 		std::cout << paths[i] << ": ";
 		cv::Mat image = cv::imread("./images/" + paths[i]);
@@ -81,6 +81,7 @@ void get_chessboard_corners(const std::vector<std::string>& paths) {
 		
 		bool found_corners = cv::findChessboardCorners(gray, cv::Size(horizontal_corner_number, vertical_corner_number), image_corners, cv::CALIB_CB_ADAPTIVE_THRESH);
 		if (found_corners) {
+            ++count;
             std::cout << "corner found" << std::endl;
 			cv::cornerSubPix(gray, image_corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(cv::TermCriteria::EPS + cv::TermCriteria::MAX_ITER, 30, 0.1));
             cv::drawChessboardCorners(image, cv::Size(horizontal_corner_number, vertical_corner_number), image_corners, found_corners);
@@ -105,9 +106,10 @@ void get_chessboard_corners(const std::vector<std::string>& paths) {
 			}
 		}
 		else {
-			std::cout << "Cannot find corners!" << std::endl;
+			std::cout << "cannot find corners!" << std::endl;
 		}
 	}
+    std::cout << "chessboards found: " << count << std::endl;
 }
 
 void calibrate_normal() {
@@ -190,24 +192,88 @@ void extract_extrinsics() {
     write_data("./cv_extrinsic_results_" + base_file_name + ".txt");
 }
 
+void calibrate_stereo() {
+    
+    std::cout << "You have to calibrate the two camera first!" << std::endl;
+    std::cout << "---- Calibrating camera 1 ----" << std::endl;
+    calibrate_normal();
+    cv::Mat K1(intrinsic_matrix);
+    cv::Mat D1(distortion_coeffs);
+
+    std::cout << "---- Calibrating camera 2 ----" << std::endl;
+    calibrate_normal();
+    cv::Mat K2(intrinsic_matrix);
+    cv::Mat D2(distortion_coeffs);
+
+    std::cout << "---- Camera 1 images ----" << std::endl;
+    read_data();
+    std::vector<std::string> paths;
+    for (int i = first_image_index; i < last_image_index + 1; i++) {
+        paths.push_back(base_file_name + std::to_string(i) + "." + extension);
+    }
+    get_chessboard_corners(paths);
+    std::vector<std::vector<cv::Point2f> > image_points1 = image_points;
+    paths.clear();
+
+    std::cout << "---- Camera 2 images ----" << std::endl;
+    read_data();
+    for (int i = first_image_index; i < last_image_index + 1; i++) {
+        paths.push_back(base_file_name + std::to_string(i) + "." + extension);
+    }
+    get_chessboard_corners(paths);
+    std::vector<std::vector<cv::Point2f> > image_points2 = image_points;
+
+    cv::Mat E, F, R, T, err;
+    cv::stereoCalibrate(
+        calibration_object_points, 
+        image_points1, 
+        image_points2, 
+        K1, 
+        D1, 
+        K2, 
+        D2, 
+        image_size, 
+        R, 
+        T,
+        E,
+        F,
+        err,
+        cv::CALIB_FIX_INTRINSIC);
+
+    std::cout << T << std::endl;
+    std::cout << R << std::endl;
+    
+    rotation_vecs.clear();
+    translation_vecs.clear();
+    cv::Mat r_vec;
+    Rodrigues(R, r_vec);
+    rotation_vecs.push_back(r_vec);
+    translation_vecs.push_back(T);
+
+    write_data("./cv_stereo_results_" + base_file_name + ".txt");
+}
+
+
 int main(int argc, char *argv[]) {
 
     std::cout << "\n\tThis tool can be used for camera calibration with OpenCV.\n" << std::endl;
 
     int action;
      while (action) {
-        std::cout << "Do you want to calibrate a camera with normal or fisheye lens?" << std::endl;
+        std::cout << "Select an option below." << std::endl;
         std::cout << "\t[0] Exit" << std::endl;
-        std::cout << "\t[1] Normal" << std::endl;
-        std::cout << "\t[2] Fisheye" << std::endl;
-        std::cout << "\t[3] Extract extrinsic parameters (only usable after recent calibration)" << std::endl;
+        std::cout << "\t[1] Normal camera calbration" << std::endl;
+        std::cout << "\t[2] Fisheye camera calibration" << std::endl;
+        std::cout << "\t[3] Stereo camera calibration" << std::endl;
+        std::cout << "\t[4] Extract extrinsic parameters (only usable after recent calibration)" << std::endl;
         read<int>(action, "");
 
         switch (action) {
             case 0: break; 
             case 1: calibrate_normal(); break;
             case 2: calibrate_fisheye(); break;
-            case 3: extract_extrinsics(); break;
+            case 3: calibrate_stereo(); break;
+            case 4: extract_extrinsics(); break;
         }
     }
 

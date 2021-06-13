@@ -1,1 +1,1 @@
-g++ src/main.cpp -o cv_calib `pkg-config --cflags --libs opencv4`
+g++ src/main.cpp -o cv_calib.out `pkg-config --cflags --libs opencv4`

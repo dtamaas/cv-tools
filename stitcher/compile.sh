@@ -1,0 +1,1 @@
+g++ src/main.cpp -o stitcher.out `pkg-config --cflags --libs opencv4` 
