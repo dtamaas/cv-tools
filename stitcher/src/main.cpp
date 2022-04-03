@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <math.h> 
 #include <opencv2/opencv.hpp>
 
@@ -21,6 +22,7 @@ void read(T &data, const std::string& instruction) {
 cv::Mat read_parameter(const std::string& path, const int& rows = 3, const int& cols = 3) {
 	cv::Mat m = cv::Mat(rows, cols, CV_64F);
 	std::ifstream file(path);
+
 	for (int i = 0; i < rows; i++) {
 		for (int j = 0; j < cols; j++) {
 			std::string str;
@@ -28,7 +30,8 @@ cv::Mat read_parameter(const std::string& path, const int& rows = 3, const int& 
 			m.at<double>(i, j) = std::stod(str);
 		}
 	}
-  file.close();
+
+	file.close();
 	return m;
 }
 
