@@ -1,6 +1,14 @@
 #include <iostream>
 #include "ocam_functions.h"
 
+struct Settings {
+    std::string base_file_name = "Dev0_Image_w960_h600_fn";
+    std::string extension = "jpg";
+    std::string calib_file_name = "calib_results.txt";
+    float scale_factor = 4.0;
+    int first_image_index = 3;
+    int last_image_index = 216;
+};
 
 template <typename T>
 void read(T &data, const std::string& instruction) {
@@ -9,27 +17,22 @@ void read(T &data, const std::string& instruction) {
 }
 
 void undistort_images() {
-    std::string base_file_name;
-    std::string extension = "jpg";
-    std::string calib_file_name = "calib_results.txt";
-    float scale_factor;
-    int first_image_index;
-    int last_image_index;
-
-    read<std::string>(base_file_name, "Add the common name of the images without suffixes and numbers. (i.e: 'image1.jpg' -> 'image')");
-    read<std::string>(extension, "Add the extension of the image files. (i.e: 'jpg', 'png', 'bmp')");
-    read<int>(first_image_index, "Add index of the first image. (i.e: 1 if the set starts from 'image1.jpg')");
-    read<int>(last_image_index, "Add index of the last image. (i.e: 3 if the last image of the set is 'image3.jpg')");
-    read<std::string>(calib_file_name, "Add the name of the calibration file. (i.e: 'calib_results.txt')");
-    read<float>(scale_factor, "Add the scale factor for the image undistortion. (zoom, basic value: 4)");
-
+    Settings settings;
     std::vector<std::string> paths;
-    for (int i = first_image_index; i < last_image_index + 1; i++) {
-        paths.push_back(base_file_name + std::to_string(i) + "." + extension);
+    ocam_model o;
+
+    // read<std::string>(settings.base_file_name, "Add the common name of the images without suffixes and numbers. (i.e: 'image1.jpg' -> 'image')");
+    // read<std::string>(settings.extension, "Add the extension of the image files. (i.e: 'jpg', 'png', 'bmp')");
+    // read<int>(settings.first_image_index, "Add index of the first image. (i.e: 1 if the set starts from 'image1.jpg')");
+    // read<int>(settings.last_image_index, "Add index of the last image. (i.e: 3 if the last image of the set is 'image3.jpg')");
+    // read<std::string>(settings.calib_file_name, "Add the name of the calibration file. (i.e: 'calib_results.txt')");
+    // read<float>(settings.scale_factor, "Add the scale factor for the image undistortion. (zoom, basic value: 4)");
+
+    for (int i = settings.first_image_index; i < settings.last_image_index + 1; i++) {
+        paths.push_back(settings.base_file_name + std::to_string(i) + "." + settings.extension);
     }
 
-    struct ocam_model o;
-    get_ocam_model(&o, calib_file_name.c_str());
+    get_ocam_model(&o, settings.calib_file_name.c_str());
 
     int i = 1;
     while(i - 1 < paths.size()) {
@@ -46,7 +49,7 @@ void undistort_images() {
         cv::Mat map_x(image.size(), CV_32FC1);
         cv::Mat map_y(image.size(), CV_32FC1);
 
-        create_perspecive_undistortion_LUT(map_x, map_y, &o, scale_factor);
+        create_perspecive_undistortion_LUT(map_x, map_y, &o, settings.scale_factor);
 
         cv::remap(image, result, map_x, map_y, cv::INTER_CUBIC, 0);
 
@@ -57,12 +60,12 @@ void undistort_images() {
 }
 
 void undistort_video() {
-    std::cout << "TODO: video" << std::endl;
+    std::cout << "TODO: implement video undistortion" << std::endl;
 }
 
 int main(int argc, char *argv[]) {
 
-    std::cout << "\n\tThis tool can be used to undistort images/video based on Scaramuzza's omnidirectional camera calibration toolbox.\n" << std::endl;
+    std::cout << "\nThis tool can be used to undistort images/video based on Scaramuzza's omnidirectional camera calibration toolbox.\n" << std::endl;
 
     int action;
     while (action) {

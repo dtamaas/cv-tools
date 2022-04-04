@@ -5,13 +5,24 @@
 
 #define PI 3.14159265
 
-int camera_number;
-std::string base_file_name;
-std::string extension = "jpg";
-int camera_type_number;
-std::string intrinsic_base_name;
-std::string r_base_name;
-std::string t_base_name;
+struct Settings {
+	// Number of total cameras
+	int camera_number = 5;
+
+	// Number of different camera types
+	int camera_type_number = 2;
+
+	// Base name and extension of the input image files
+	std::string base_file_name = "image";
+	std::string image_extension = "jpg";
+
+	// Base name of the input camera intrisic parameters; (number of files = camera_type_number)
+	std::string intrinsic_base_name = "K";
+
+	// Base name of the cameras' extrinsic parameters
+	std::string r_base_name = "R";
+	std::string t_base_name = "t";
+};
 
 template <typename T>
 void read(T &data, const std::string& instruction) {
@@ -48,6 +59,7 @@ cv::Point3d transform(const cv::Point3d& point, const cv::Mat& rotation_matrix, 
 }
 
 void stitch_images() {
+	Settings settings;
 	std::vector<cv::Mat> images;
 	std::vector<cv::Mat> intrinsics;
 	std::vector<cv::Mat> r_mats;
@@ -57,17 +69,17 @@ void stitch_images() {
 	std::vector<cv::Mat> rotations;
 
 	// Parameter reading
-	read<int>(camera_number, "Add the number of cameras in the system.");
-	read<std::string>(base_file_name, "Add the common name of the images without suffixes and numbers. (i.e: 'image1.jpg' -> 'image')");
-	read<std::string>(extension, "Add the extension of the image files. (i.e: 'jpg', 'png', 'bmp')");
-	read<int>(camera_type_number, "How many camera types are being used?");
-	read<std::string>(intrinsic_base_name, "Add the common name of the TEXT files containing the intrinsic parameters. (i.e: 'K1.txt, K2.txt -> K')");
-	read<std::string>(r_base_name, "Add the common name of the TEXT files containing the rotation matrices. (i.e: 'R1.txt, R2.txt -> R')");
-	read<std::string>(t_base_name, "Add the common name of the TEXT files containing the translation vectors. (i.e: 't1.txt, t2.txt -> t')");
+	// read<int>(camera_number, "Add the number of cameras in the system.");
+	// read<std::string>(base_file_name, "Add the common name of the images without suffixes and numbers. (i.e: 'image1.jpg' -> 'image')");
+	// read<std::string>(extension, "Add the extension of the image files. (i.e: 'jpg', 'png', 'bmp')");
+	// read<int>(camera_type_number, "How many camera types are being used?");
+	// read<std::string>(intrinsic_base_name, "Add the common name of the TEXT files containing the intrinsic parameters. (i.e: 'K1.txt, K2.txt -> K')");
+	// read<std::string>(r_base_name, "Add the common name of the TEXT files containing the rotation matrices. (i.e: 'R1.txt, R2.txt -> R')");
+	// read<std::string>(t_base_name, "Add the common name of the TEXT files containing the translation vectors. (i.e: 't1.txt, t2.txt -> t')");
 
 	// Store the image paths in a vector
-	for (int i = 1; i <= camera_number; ++i) {
-		cv::Mat img = cv::imread("./images/" + base_file_name + std::to_string(i) + "." + extension);
+	for (int i = 1; i <= settings.camera_number; ++i) {
+		cv::Mat img = cv::imread("./images/" + settings.base_file_name + std::to_string(i) + "." + settings.image_extension);
 		images.push_back(img);
 	}
 
@@ -76,16 +88,16 @@ void stitch_images() {
 	int WIDTH = images[0].size().width;
 
 	// Read the INTRINSIC camera parameters for every types of camera; in this case normal + fisheye
-	for (int i = 1; i <= camera_type_number; ++i) {
-		cv::Mat K = read_parameter("./camera_parameters/" + intrinsic_base_name + std::to_string(i) + ".txt");
+	for (int i = 1; i <= settings.camera_type_number; ++i) {
+		cv::Mat K = read_parameter("./camera_parameters/" + settings.intrinsic_base_name + std::to_string(i) + ".txt");
 		intrinsics.push_back(K);
 	}
 
 	// Read the EXTRINSIC camera parameters, R and t
-	int extrinsics_number = (camera_number - 1) * 2;
+	int extrinsics_number = (settings.camera_number - 1) * 2;
 	for (int i = 1; i <= extrinsics_number; ++i) {
-		cv::Mat R = read_parameter("./camera_parameters/" + r_base_name + std::to_string(i) + ".txt");
-		cv::Mat t = read_parameter("./camera_parameters/" + t_base_name + std::to_string(i) + ".txt", 3, 1);
+		cv::Mat R = read_parameter("./camera_parameters/" + settings.r_base_name + std::to_string(i) + ".txt");
+		cv::Mat t = read_parameter("./camera_parameters/" + settings.t_base_name + std::to_string(i) + ".txt", 3, 1);
 		r_mats.push_back(-R.t());
 		t_vecs.push_back(t);
 	}
@@ -96,7 +108,7 @@ void stitch_images() {
 
 	// Extraction of the focal lengths of the of the camera types
 	// Here I took the average of the focal lengths of the x and y axes
-	for (int i = 0; i < camera_type_number; ++i) {
+	for (int i = 0; i < settings.camera_type_number; ++i) {
 		double f = (intrinsics[i].at<double>(0,0) + intrinsics[i].at<double>(1,1)) / 2;
 		focal_lengths.push_back(f);
 	}
@@ -148,7 +160,7 @@ void stitch_images() {
 	
 	// TODO: add image ordering
 	// For every camera...
-	for (int i = 1; i <= camera_number; ++i) {
+	for (int i = 1; i <= settings.camera_number; ++i) {
 		double f;
 
 		// Change the focal length for the middle (fisheye) camera
@@ -191,7 +203,7 @@ void stitch_images() {
 	}
 
 	// Write results
-	std::string result_path = "./results/res_" + base_file_name + "." + extension;
+	std::string result_path = "./results/res_" + settings.base_file_name + "." + settings.image_extension;
 	cv::imwrite(result_path, output_img);
 }
 
