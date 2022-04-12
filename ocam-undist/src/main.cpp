@@ -2,7 +2,7 @@
 #include "ocam-functions.h"
 
 struct Settings {
-    std::string calibFileName = "../example/undistortion/calib_results_w960_h600.txt";
+    std::string calibFileName = "../example/undistortion/inputs/ocam-calib.txt";
     std::string inputFileNames = "../example/undistortion/inputs/input";
     std::string resultFileNames = "../example/undistortion/results/result";
     std::string extension = "jpg";

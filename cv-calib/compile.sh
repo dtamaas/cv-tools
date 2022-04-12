@@ -1,4 +1,4 @@
-g++ src/main.cpp -o cv_calib.out \
+g++ src/main.cpp -o cv-calib.out \
     -I /usr/local/include/opencv4 \
     -lopencv_core \
     -lopencv_highgui \
