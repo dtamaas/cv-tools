@@ -1,4 +1,4 @@
-g++ src/main.cpp src/ocam_functions.cpp -o ocam_undist.out \
+g++ src/main.cpp src/ocam-functions.cpp -o ocam-undist.out \
     -I /usr/local/include/opencv4 \
     -lopencv_core \
     -lopencv_highgui \

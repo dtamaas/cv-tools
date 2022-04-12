@@ -5,7 +5,7 @@
    Author: Davide Scaramuzza - email: davide.scaramuzza@ieee.org
 ------------------------------------------------------------------------------*/
 
-#include "ocam_functions.h"
+#include "ocam-functions.h"
 
 # define M_PI           3.14159265358979323846  /* pi */
 
