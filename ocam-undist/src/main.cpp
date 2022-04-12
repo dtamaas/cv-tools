@@ -6,7 +6,7 @@ struct Settings {
     std::string inputFileNames = "../example/undistortion/inputs/input";
     std::string resultFileNames = "../example/undistortion/results/result";
     std::string extension = "jpg";
-    int inputImageNr = 3;
+    int lastImageNr = 4;
     float scaleFactor = 4.0;
 };
 
@@ -17,8 +17,7 @@ void undistortImages() {
     get_ocam_model(&o, settings.calibFileName.c_str());
 
     int i = 0;
-    int foundNr = 0;
-    while (foundNr < settings.inputImageNr) {
+    while (i <= settings.lastImageNr) {
         std::string inputPath = settings.inputFileNames + std::to_string(i) + "." + settings.extension;
         cv::Mat image = cv::imread(inputPath);
 
@@ -47,7 +46,6 @@ void undistortImages() {
         cv::imwrite(result_path, result);
         std::cout << "Processing image: " << inputPath << std::endl;
         i++;
-        foundNr++;
     }
 }
 
