@@ -4,3 +4,5 @@ g++ src/main.cpp -o stitcher.out \
     -lopencv_highgui \
     -lopencv_imgproc \
     -lopencv_imgcodecs
+
+./stitcher.out

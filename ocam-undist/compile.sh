@@ -4,3 +4,5 @@ g++ src/main.cpp src/ocam-functions.cpp -o ocam-undist.out \
     -lopencv_highgui \
     -lopencv_imgproc \
     -lopencv_imgcodecs
+
+./ocam-undist.out
